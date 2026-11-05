@@ -25,6 +25,31 @@ including simple digital logic and discrete electronic components.
 - Preserve architectural compatibility across different implementations.
 - Encourage long-term hardware and software reproducibility.
 
+  ## Philosophy and Vision
+
+Rebuild ISA is based on the belief that computing technology
+should remain understandable, accessible and reconstructable
+across generations.
+
+The project aims to reduce long-term dependence on proprietary
+architectures and technologies that may become difficult to
+reproduce or maintain as their original manufacturers and
+industrial ecosystems disappear.
+
+Rather than designing architectures exclusively around
+current technological capabilities, Rebuild ISA explores
+how computing architectures can remain implementable using
+different technologies, including simpler and independently
+reproducible hardware.
+
+The long-term vision is to preserve the knowledge and
+freedom necessary for future generations to understand,
+rebuild and continue developing computing technology.
+
+**Technology should not only be built to work today, but
+also designed to be rebuilt tomorrow.**
+
+
 ## Architecture Family
 
 The initial architecture is RB4, a minimal 4-bit processor
