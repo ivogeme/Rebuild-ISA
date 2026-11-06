@@ -1,6 +1,6 @@
 # RB4 Implementation Requirements
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Status:** Draft
 
 ## 1. Overview
@@ -205,3 +205,28 @@ of existing instructions or architectural registers.
 
 Incompatible extensions must be identified
 as incompatible with the base RB4 architecture.
+
+## 14. Ratified Addressing and Memory Requirements
+
+Implementations must use 9-bit logical data addresses
+covering 0x000–0x1FF.
+
+RB4-B must map selector 0 to the lower nibble and selector 1
+to the upper nibble.
+
+A partial-nibble write must preserve the other nibble.
+
+RB4-N must assemble each logical instruction unit with
+the first physical nibble as the low-order nibble and the
+second physical nibble as the high-order nibble.
+
+Logical data addresses 0x1F0–0x1FF are reserved for MMIO.
+
+LOAD and STORE accesses to these addresses must be routed
+to the MMIO interface.
+
+Instruction fetch must continue to read unified program
+memory normally.
+
+An access to an MMIO register not implemented by the selected
+platform profile must cause FAULT.
