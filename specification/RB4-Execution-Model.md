@@ -1,6 +1,6 @@
 # RB4 Execution Model
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 **Status:** Draft
 
 ## 1. Overview
@@ -240,3 +240,42 @@ The execution model does not prescribe:
 
 Different implementations are compatible
 when they preserve the same architectural behavior.
+
+## 17. Instruction Boundary at 0xFF
+
+PC arithmetic remains modular over 8 bits.
+
+A complete instruction ending at logical address 0xFF
+advances the PC to 0x00.
+
+However, an instruction that begins at 0xFF and requires
+additional logical instruction units is incomplete and
+causes FAULT.
+
+The processor must not fetch the missing part from
+address 0x00.
+
+This rule distinguishes normal PC wrap after a complete
+instruction from an instruction that crosses the end
+of the logical instruction address space.
+
+## 18. Extended LDI Fault Condition
+
+An extended LDI immediate greater than 15 causes FAULT,
+because the destination general-purpose register is only
+4 bits wide.
+
+No truncation or modulo conversion is permitted.
+
+## 19. MMIO Fault Condition
+
+LOAD and STORE accesses to logical data addresses
+0x1F0 through 0x1FF are routed to MMIO.
+
+If the selected platform profile does not implement
+the addressed MMIO register, the access causes FAULT.
+
+The MMIO register assignment is defined by the selected
+platform profile.
+
+
