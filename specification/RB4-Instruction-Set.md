@@ -1,6 +1,6 @@
 # RB4 Instruction Set
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 **Status:** Draft
 
 ## 1. Overview
@@ -427,3 +427,28 @@ change after the specification is finalized.
 New instructions must use reserved encodings
 or be introduced through a documented
 architectural extension.
+
+
+## 15. Extended LDI Validation
+
+LDI writes a 4-bit value to its destination register.
+
+Therefore, the valid immediate range is 0 through 15,
+regardless of whether the short or extended encoding is used.
+
+An extended LDI immediate greater than 15 causes FAULT.
+
+The implementation must not truncate the value, wrap it
+modulo 16, or silently accept it.
+
+## 16. Memory-Mapped I/O Accesses
+
+LOAD and STORE use 9-bit logical data addresses.
+
+Addresses 0x1F0 through 0x1FF are reserved for MMIO
+and access the MMIO interface instead of ordinary RAM.
+
+An access to an unimplemented MMIO register causes FAULT.
+
+The individual register assignments are defined by the
+selected platform profile.
