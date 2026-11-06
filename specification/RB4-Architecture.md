@@ -1,7 +1,7 @@
 # RB4 Architecture Specification
 
 **Architecture:** Rebuild ISA RB4  
-**Specification Version:** 0.2.0  
+**Specification Version:** 0.3.0
 **Status:** Draft
 
 ## 1. Overview
@@ -239,4 +239,28 @@ Reserved encodings must remain available for
 future compatible extensions where applicable.
 
 Any incompatible architectural change must be
+
+## 13. Ratified Base Decisions
+
+The following decisions are approved for the RB4 base architecture:
+
+- Logical data addresses are 9 bits wide (0x000–0x1FF).
+- RB4-B selector 0 addresses the lower nibble and selector 1
+  addresses the upper nibble.
+- RB4-N assembles each logical instruction unit with the first
+  physical nibble as the low-order nibble and the second as
+  the high-order nibble.
+- Main opcode groups are allocated as specified in
+  RB4-Binary-Encoding.md.
+- Extended LDI values greater than 15 cause FAULT.
+- A complete instruction ending at 0xFF may advance PC to 0x00.
+  An instruction beginning at 0xFF that requires additional
+  units causes FAULT rather than wrapping to complete the
+  instruction.
+- Logical data addresses 0x1F0–0x1FF are reserved for MMIO.
+  This data-access overlay does not redirect instruction fetch.
+
+The exact subopcode assignments, operand bit layouts, LOAD/STORE
+9-bit address encoding, and common peripheral register map
+remain to be specified before the architecture can be frozen.
 identified as a new architecture revision or family member.
