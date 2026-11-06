@@ -1,6 +1,6 @@
 # RB4 Memory Model
 
-**Version:** 0.2.0  
+**Version:** 0.3.0
 **Status:** Draft
 
 ## 1. Overview
@@ -228,3 +228,43 @@ must remain invisible to software.
 An implementation that changes the logical
 behavior of memory operations is not compatible
 with the RB4 specification.
+
+
+
+## 13. Ratified Nibble Ordering
+
+The logical nibble ordering is fixed for both memory profiles.
+
+In RB4-N, for a logical instruction unit assembled from two
+consecutive physical nibbles:
+
+- The first physical nibble is the low-order nibble (bits 3:0).
+- The second physical nibble is the high-order nibble (bits 7:4).
+
+The logical instruction unit is therefore:
+
+(second_nibble << 4) | first_nibble
+
+In RB4-B, logical data address selector 0 selects the lower
+nibble (bits 3:0), and selector 1 selects the upper nibble
+(bits 7:4).
+
+A STORE to one nibble must preserve the other nibble exactly.
+
+## 14. MMIO Data-Access Overlay
+
+Logical data addresses 0x1F0 through 0x1FF are reserved
+for MMIO. LOAD and STORE operations to these addresses
+are routed to the MMIO interface instead of ordinary RAM.
+
+This reservation applies to logical data accesses. Instruction
+fetch continues to read the unified program memory at the
+logical instruction address, including the final instruction
+addresses.
+
+The physical memory capacity remains 2048 bits;
+the MMIO window does not change the physical storage size.
+
+The mapping of individual devices and registers inside
+the MMIO window is defined by a platform profile. Access to
+an unimplemented MMIO register causes FAULT.
