@@ -1,6 +1,6 @@
 # RB4 Binary Instruction Encoding
 
-**Version:** 0.2.0
+**Version:** 0.3.0
 **Status:** Draft
 
 ## 1. Overview
@@ -226,3 +226,74 @@ The following information remains to be finalized:
 
 These assignments must be published
 before the RB4 binary encoding is frozen.
+
+## 16. Ratified Main Opcode Groups
+
+The following main opcode allocation is approved for the RB4 base
+encoding. Each value is the 4-bit opcode field.
+
+| Opcode | Group |
+|---|---|
+| 0000 | Control |
+| 0001 | Immediate load (LDI) |
+| 0010 | Register transfer (MOV) |
+| 0011 | Memory operations (LOAD, STORE) |
+| 0100 | Addition (ADD) |
+| 0101 | Subtraction (SUB) |
+| 0110 | Increment and decrement (INC, DEC) |
+| 0111 | AND |
+| 1000 | OR |
+| 1001 | XOR and NOT |
+| 1010 | Absolute unconditional jump (JMP) |
+| 1011 | Conditional absolute jumps (JZ, JNZ) |
+| 1100 | Relative jumps |
+| 1101 | Extended operations |
+| 1110 | Reserved |
+| 1111 | Reserved |
+
+The allocation above fixes the main opcode groups. It does not,
+by itself, finalize the subopcode values or the bit-level operand
+layout inside each group. Those details must be specified before
+the binary encoding can be frozen.
+
+## 17. Extended Immediate Range
+
+For LDI, both short and extended immediate forms must represent
+a value from 0 through 15. An extended LDI immediate greater than
+15 causes FAULT. Implementations must not silently truncate the
+value or wrap it modulo 16.
+
+## 18. Relative PC Boundary Rule
+
+PC arithmetic is modular over 8 bits. A complete instruction
+whose final logical unit is at address 0xFF may advance the PC
+to 0x00.
+
+An instruction beginning at 0xFF that requires one or more
+additional logical instruction units is incomplete and causes
+FAULT. Instruction fetch for an incomplete instruction does not
+wrap around to address 0x00 to complete that instruction.
+
+## 19. Logical Data Address Width
+
+Logical data addresses are 9 bits wide and identify one of
+512 logical 4-bit positions, from 0x000 through 0x1FF.
+The physical memory profile must not change this logical address
+width or its meaning.
+
+## 20. MMIO Data-Address Window
+
+The logical data-address range 0x1F0 through 0x1FF is reserved
+for memory-mapped input/output access. LOAD and STORE accesses
+to this range are routed to the MMIO interface rather than
+ordinary RAM.
+
+Instruction fetch continues to use the unified program memory
+and is not redirected by this data-access MMIO window.
+This permits instruction storage at every logical instruction
+address, including 0xF8 through 0xFF.
+
+The device-register assignment within the MMIO window is
+implementation- or platform-profile-defined. An access to an
+unimplemented MMIO register causes FAULT. A common peripheral
+register map remains a future standardization task.
