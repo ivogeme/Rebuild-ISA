@@ -1,6 +1,6 @@
 # RB4 Conformance Tests
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Status:** Draft
 
 ## 1. Overview
@@ -271,3 +271,28 @@ for its declared memory profile.
 
 Partial implementations must clearly
 identify unsupported architectural features.
+
+
+## 17. Ratified Decision Tests
+
+The conformance suite must additionally verify:
+
+- Logical data addresses are 9 bits and cover 0x000–0x1FF.
+- RB4-B selector 0 reads/writes bits 3:0 and selector 1
+  reads/writes bits 7:4.
+- A STORE to one RB4-B nibble preserves the other nibble.
+- RB4-N instruction assembly uses the first physical nibble
+  as bits 3:0 and the second as bits 7:4.
+- Extended LDI values greater than 15 cause FAULT.
+- A complete instruction ending at 0xFF advances PC to 0x00.
+- An instruction beginning at 0xFF that requires another
+  logical unit causes FAULT and does not wrap to fetch it.
+- LOAD and STORE accesses to 0x1F0–0x1FF are routed to MMIO.
+- Access to an unimplemented MMIO register causes FAULT.
+- The main opcode group values match the approved table
+  in RB4-Binary-Encoding.md.
+
+The final binary test programs and expected states must be
+added when the complete subopcode and operand encoding is
+published.
+
