@@ -1,6 +1,6 @@
 # RB4 Addressing Model
 
-**Version:** 0.1.0
+**Version:** 0.2.0
 **Status:** Draft
 
 ## 1. Overview
@@ -243,3 +243,54 @@ before the addressing model is frozen:
   or unmapped regions.
 - Exact interaction between instruction
   fetch and data writes during execution.
+
+
+  ## 16. Ratified Addressing Decisions
+
+The logical data address width is confirmed as 9 bits.
+Addresses range from 0x000 through 0x1FF and identify
+individual logical 4-bit values.
+
+For RB4-B, the nibble ordering is fixed as follows:
+
+- Nibble selector 0 selects the lower four bits (bits 3:0).
+- Nibble selector 1 selects the upper four bits (bits 7:4).
+
+For a physical byte 0xB4, logical data address selector 0
+reads 0x4 and selector 1 reads 0xB.
+
+The same logical ordering applies when assembling instruction
+units in RB4-N: the first physical nibble is the low-order
+nibble (bits 3:0) and the second physical nibble is the
+high-order nibble (bits 7:4).
+
+Thus:
+
+LogicalByte = (HighNibble << 4) | LowNibble
+
+## 17. MMIO Data-Address Window
+
+Logical data addresses 0x1F0 through 0x1FF are reserved
+for MMIO. LOAD and STORE operations targeting these addresses
+access the MMIO interface, not ordinary RAM.
+
+Instruction fetch remains directed to unified program memory.
+The MMIO data-address window therefore does not remove or
+renumber logical instruction addresses.
+
+The assignment of individual device registers within this
+16-nibble window is platform-profile-defined. Access to an
+unimplemented register causes FAULT.
+
+## 18. Remaining Address-Encoding Work
+
+The 9-bit logical data address width, RB4-B nibble ordering,
+and RB4-N instruction nibble ordering are now fixed.
+
+The exact binary representation of a 9-bit address in LOAD
+and STORE instructions remains to be specified in the binary
+encoding table.
+
+The behavior of any memory access outside the defined logical
+data-address range is invalid and causes FAULT. No such
+address is representable by a conforming 9-bit address field.
