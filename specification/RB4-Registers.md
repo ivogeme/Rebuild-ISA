@@ -140,6 +140,9 @@ The following rules apply to the base instruction set.
 | JMP | Unchanged | Unchanged |
 | JZ | Unchanged | Unchanged |
 | JNZ | Unchanged | Unchanged |
+| JR | Unchanged | Unchanged |
+| JRZ | Unchanged | Unchanged |
+| JRNZ | Unchanged | Unchanged |
 | NOP | Unchanged | Unchanged |
 | HALT | Unchanged | Unchanged |
 
@@ -223,5 +226,3 @@ The following instructions preserve FLAGS:
 - HALT
 
 RESET sets all architectural registers to zero.
-
-
