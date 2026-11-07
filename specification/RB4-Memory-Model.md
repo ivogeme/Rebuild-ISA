@@ -152,13 +152,26 @@ instruction and data memories.
 Self-modifying code is permitted.
 
 A program may modify memory locations that
-contain instructions.
+contain instructions through STORE operations,
+provided that the corresponding logical data
+addresses are not reserved for MMIO.
 
 The effects of modifying instruction memory
 must be visible to subsequent instruction fetches.
 
-No memory protection mechanism is mandatory.
+The MMIO data-address overlay reserves logical
+data addresses 0x1F0 through 0x1FF for device access.
+STORE operations targeting these addresses access
+the MMIO interface instead of ordinary RAM.
 
+This restriction applies only to logical data
+accesses. Instruction fetching continues to read
+the unified program memory normally, including
+instruction addresses corresponding to the MMIO
+data-address window.
+
+No memory protection mechanism is mandatory
+.
 ## 9. Memory Access Rules
 
 All memory accesses must follow the logical
@@ -262,20 +275,30 @@ A STORE to one nibble must preserve the other nibble exactly.
 
 ## 14. MMIO Data-Access Overlay
 
-Logical data addresses 0x1F0 through 0x1FF are reserved
-for MMIO. LOAD and STORE operations to these addresses
+Logical data addresses 0x1F0 through 0x1FF are
+reserved for memory-mapped input/output.
+
+LOAD and STORE operations targeting these addresses
 are routed to the MMIO interface instead of ordinary RAM.
 
-This reservation applies to logical data accesses.
+The overlay applies exclusively to logical data accesses.
 
-Instruction fetch continues to read the unified program
-memory at the logical instruction address.
+Instruction fetching continues to read the unified
+program memory at the corresponding logical
+instruction addresses.
 
-The MMIO data-address window does not remove or renumber
+The logical data addresses 0x1F0 through 0x1FF
+therefore cannot be used to access their corresponding
+RAM nibbles through LOAD or STORE.
+
+The MMIO overlay does not remove or renumber
 logical instruction addresses.
 
-The physical memory capacity remains 2048 bits;
-the MMIO window does not change the physical storage size.
+The physical memory capacity remains 2048 bits.
+
+The 16 reserved logical data addresses reduce the
+number of logical nibble positions directly accessible
+as ordinary RAM through LOAD and STORE to 496.
 
 The mapping of individual devices and registers inside
 the MMIO window is defined by a platform profile.
