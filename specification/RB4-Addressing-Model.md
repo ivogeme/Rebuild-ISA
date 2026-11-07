@@ -86,13 +86,20 @@ For logical instruction address A:
 
 This relationship ensures that instruction
 and data accesses refer to the same
-underlying memory contents.
+underlying physical memory contents.
 
-A STORE operation may therefore modify
-part of a logical instruction unit.
+A STORE operation may modify part of a
+logical instruction unit when its target
+logical data address is not reserved for MMIO.
+
+Logical data addresses 0x1F0 through 0x1FF
+are reserved for MMIO and do not provide
+ordinary RAM access.
 
 Subsequent instruction fetching must observe
-the modified memory contents.
+modifications made to the underlying program
+memory, including memory positions corresponding
+to the MMIO data-address window.
 
 ## 6. RB4-N Physical Mapping
 
@@ -210,21 +217,27 @@ The architectural result must be identical.
 ## 12. Unified Memory
 
 Instruction and data addressing refer
-to the same underlying logical memory.
+to the same underlying physical memory.
 
 The architecture does not define separate
 instruction and data storage.
 
 Self-modifying code is permitted.
 
-All memory modifications must be visible
-to subsequent instruction fetches.
+STORE operations may modify instruction
+memory through logical data addresses that
+are not reserved for MMIO.
+
+All modifications to instruction memory
+must be visible to subsequent instruction fetches.
+
+The MMIO data-address window, 0x1F0 through
+0x1FF, redirects LOAD and STORE operations
+to the MMIO interface instead of ordinary RAM.
 
 Instruction fetching always uses the logical
-instruction address space.
-
-The MMIO data-address window does not redirect
-instruction fetches.
+instruction address space and is never redirected
+by the MMIO data-address window.
 
 ## 13. Memory-Mapped Input/Output
 
