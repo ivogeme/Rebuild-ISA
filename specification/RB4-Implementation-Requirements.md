@@ -155,7 +155,17 @@ per instruction is implementation-dependent.
 Implementations must provide the
 architectural MMIO mechanism.
 
-The actual peripherals are implementation-dependent.
+The reserved logical data-address window is:
+
+0x1F0 through 0x1FF.
+
+LOAD and STORE accesses to this range
+must be routed to the MMIO interface.
+
+Instruction fetching must continue to
+read unified program memory normally.
+
+The actual peripherals are platform-dependent.
 
 Possible peripherals include:
 
@@ -168,6 +178,9 @@ Possible peripherals include:
 
 The base architecture does not require
 a specific peripheral set.
+
+Access to an unimplemented or forbidden
+MMIO register must cause FAULT.
 
 ## 11. Compatibility Requirements
 
@@ -211,14 +224,14 @@ as incompatible with the base RB4 architecture.
 Implementations must use 9-bit logical data addresses
 covering 0x000–0x1FF.
 
-RB4-B must map selector 0 to the lower nibble and selector 1
-to the upper nibble.
+RB4-B must map selector 0 to the lower nibble
+and selector 1 to the upper nibble.
 
 A partial-nibble write must preserve the other nibble.
 
 RB4-N must assemble each logical instruction unit with
-the first physical nibble as the low-order nibble and the
-second physical nibble as the high-order nibble.
+the first physical nibble as the low-order nibble and
+the second physical nibble as the high-order nibble.
 
 Logical data addresses 0x1F0–0x1FF are reserved for MMIO.
 
@@ -228,14 +241,13 @@ to the MMIO interface.
 Instruction fetch must continue to read unified program
 memory normally.
 
-An access to an MMIO register not implemented by the selected
-platform profile must cause FAULT.
-
+An access to an MMIO register not implemented by the
+selected platform profile must cause FAULT.
 
 ## 15. Instruction Encoding Requirements
 
 Implementations must use the canonical instruction
-encoding defined in RB4-Binary-Encoding.md.
+encoding defined in `RB4-Binary-Encoding.md`.
 
 Alternative encodings for base instructions
 are not permitted.
@@ -243,13 +255,22 @@ are not permitted.
 All undefined and reserved base encodings
 must cause FAULT.
 
+Implementations must validate all required
+operand fields and reserved bits.
+
 LDI must always use two logical instruction units.
+
+The second LDI unit must have its upper
+four bits set to zero.
 
 LOAD and STORE must use three logical
 instruction units.
 
-Absolute and relative jumps must use
-their specified instruction lengths.
+Absolute jumps must use their specified
+instruction lengths.
+
+Relative jumps must use two logical
+instruction units and signed 8-bit offsets.
 
 ## 16. Fault Handling Requirements
 
