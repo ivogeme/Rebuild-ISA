@@ -111,10 +111,14 @@ The basic instruction format is designed around:
 - 4-bit opcode field.
 - 4-bit operand field.
 
-Instructions may use additional 8-bit logical units
-when extended values are required.
-
 The architecture supports variable-length instructions.
+
+Each base instruction has a defined length
+of one, two or three logical instruction units.
+
+The exact length and encoding of each instruction
+are defined in RB4-Binary-Encoding.md.
+
 
 The complete binary encoding is defined in
 `RB4-Binary-Encoding.md`.
