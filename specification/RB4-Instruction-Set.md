@@ -61,12 +61,14 @@ The proposed base instruction set contains:
 | NOT | Bitwise inversion |
 
 ### Branching
-
 | Instruction | Description |
-|---|---|
-| JMP | Unconditional jump |
-| JZ | Jump if zero |
-| JNZ | Jump if not zero |
+| --- | --- |
+| JMP | Absolute unconditional jump |
+| JZ | Absolute jump if zero |
+| JNZ | Absolute jump if not zero |
+| JR | Relative unconditional jump |
+| JRZ | Relative jump if zero |
+| JRNZ | Relative jump if not zero |
 
 Both absolute and relative jump addressing
 are supported by the architecture.
@@ -183,7 +185,7 @@ The Carry/Borrow flag records the condition
 that occurred beyond the 4-bit result.
 
 Invalid instruction operands and invalid
-immediate values must cause FAULT..
+immediate values must cause FAULT.
 
 ### 5.1 ADD
 
@@ -390,7 +392,7 @@ the binary encoding specification.
 ## 10. Flag Update Summary
 
 | Instruction | Z behavior | C behavior |
-|---|---|---|
+| --- | --- | --- |
 | ADD | Updated | Carry |
 | SUB | Updated | Borrow |
 | INC | Updated | Carry |
@@ -406,6 +408,9 @@ the binary encoding specification.
 | JMP | Unchanged | Unchanged |
 | JZ | Unchanged | Unchanged |
 | JNZ | Unchanged | Unchanged |
+| JR | Unchanged | Unchanged |
+| JRZ | Unchanged | Unchanged |
+| JRNZ | Unchanged | Unchanged |
 | NOP | Unchanged | Unchanged |
 | HALT | Unchanged | Unchanged |
 
@@ -461,17 +466,27 @@ or be introduced through a documented
 architectural extension.
 
 
-## 15. Extended LDI Validation
 
-LDI writes a 4-bit value to its destination register.
 
-Therefore, the valid immediate range is 0 through 15,
-regardless of whether the short or extended encoding is used.
+## 15. Canonical LDI Validation
 
-An extended LDI immediate greater than 15 causes FAULT.
+LDI always occupies exactly two logical instruction units.
 
-The implementation must not truncate the value, wrap it
-modulo 16, or silently accept it.
+The first unit identifies the destination register.
+
+The second unit must use the format 0000 IIII.
+
+The upper four bits of the second unit must be zero.
+
+The lower four bits represent the immediate value
+from 0 through 15.
+
+Any invalid LDI encoding causes FAULT.
+
+No short or extended LDI alternative encoding exists.
+
+Implementations must not truncate, wrap or reinterpret
+an invalid immediate value.
 
 ## 16. Memory-Mapped I/O Accesses
 
