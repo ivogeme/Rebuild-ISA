@@ -82,7 +82,6 @@ Selector 1 accesses the upper four bits (bits 7:4).
 
 All compatible implementations must use this ordering.
 
-
 ## 5. Logical Instruction Units
 
 The logical instruction unit is always 8 bits.
@@ -128,12 +127,15 @@ The architecture provides:
 - LOAD: Read a 4-bit value from memory.
 - STORE: Write a 4-bit value to memory.
 
-The initial instruction set uses absolute
-memory addressing.
+LOAD and STORE use 9-bit logical data addresses.
 
-The exact logical data address width and its
-relationship to instruction addresses are defined
-in the addressing specification.
+The valid logical data address range is:
+
+0x000 through 0x1FF.
+
+The physical implementation translates
+the logical address into the corresponding
+physical memory position.
 
 Memory operations must behave identically from
 the perspective of an RB4 program, regardless
@@ -180,8 +182,10 @@ behavior defined by the architecture.
 
 RB4 uses memory-mapped input/output.
 
-External devices may be accessed through reserved
-memory addresses.
+External devices are accessed through the
+reserved logical data-address window:
+
+0x1F0 through 0x1FF.
 
 Possible devices include:
 
@@ -192,15 +196,15 @@ Possible devices include:
 - Serial interfaces.
 - Timers.
 
-The MMIO data-address window is fixed at
-logical addresses 0x1F0 through 0x1FF.
-
 The assignment of individual device registers
 within this window is defined by the selected
 platform profile.
 
 Access to an unimplemented or forbidden
 MMIO register causes FAULT.
+
+The MMIO data-address window does not
+redirect instruction fetching.
 
 ## 11. Physical Memory Mapping
 
@@ -236,8 +240,6 @@ An implementation that changes the logical
 behavior of memory operations is not compatible
 with the RB4 specification.
 
-
-
 ## 13. Ratified Nibble Ordering
 
 The logical nibble ordering is fixed for both memory profiles.
@@ -264,17 +266,22 @@ Logical data addresses 0x1F0 through 0x1FF are reserved
 for MMIO. LOAD and STORE operations to these addresses
 are routed to the MMIO interface instead of ordinary RAM.
 
-This reservation applies to logical data accesses. Instruction
-fetch continues to read the unified program memory at the
-logical instruction address, including the final instruction
-addresses.
+This reservation applies to logical data accesses.
+
+Instruction fetch continues to read the unified program
+memory at the logical instruction address.
+
+The MMIO data-address window does not remove or renumber
+logical instruction addresses.
 
 The physical memory capacity remains 2048 bits;
 the MMIO window does not change the physical storage size.
 
 The mapping of individual devices and registers inside
-the MMIO window is defined by a platform profile. Access to
-an unimplemented MMIO register causes FAULT.
+the MMIO window is defined by a platform profile.
+
+Access to an unimplemented or forbidden MMIO register
+causes FAULT.
 
 ## 15. Canonical Logical Memory Mapping
 
@@ -320,6 +327,3 @@ the unified program memory.
 
 The MMIO data-address overlay does not
 redirect instruction fetching.
-
-
-
