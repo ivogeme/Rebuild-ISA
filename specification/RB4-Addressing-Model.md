@@ -103,9 +103,10 @@ The physical memory contains 512 positions.
 Each logical 4-bit address maps directly
 to one physical position.
 
-Proposed mapping:
+Canonical mapping:
 
 PhysicalAddress = LogicalDataAddress
+
 
 For instruction fetching, logical instruction
 address A maps to two consecutive physical
@@ -119,34 +120,22 @@ one logical 8-bit instruction unit.
 
 ## 7. RB4-B Physical Mapping
 
-RB4-B uses 8-bit physical memory positions.
+Canonical mapping:
 
-The physical memory contains 256 positions.
+PhysicalAddress = LogicalDataAddress >> 1
 
-Each physical position stores two logical
-4-bit values.
+NibbleSelector = LogicalDataAddress & 1
 
-A logical data address identifies:
+The nibble ordering is fixed:
 
-- One physical 8-bit position.
-- One 4-bit half of that position.
+- Selector 0: lower 4 bits (bits 3:0).
+- Selector 1: upper 4 bits (bits 7:4).
 
-Proposed mapping:
+This ordering is mandatory for all compatible
+RB4-B implementations.
 
-PhysicalAddress = LogicalDataAddress / 2
-
-NibbleSelector = LogicalDataAddress modulo 2
-
-The implementation must use a consistent
-nibble ordering.
-
-The proposed ordering is:
-
-- Selector 0: lower 4 bits.
-- Selector 1: upper 4 bits.
-
-This ordering remains subject to final
-specification approval.
+A STORE operation must preserve the other
+nibble in the physical byte.
 
 ## 8. Instruction Fetch in RB4-B
 
