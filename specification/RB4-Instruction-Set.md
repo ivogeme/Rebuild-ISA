@@ -99,23 +99,25 @@ the two-register logical operations.
 
 ### 4.1 LDI
 
-LDI loads an immediate value into a register.
+LDI loads a 4-bit immediate value into
+a selected general-purpose register.
 
-Example:
+Syntax:
 
-LDI R0, 5
+LDI R0, immediate
+LDI R1, immediate
 
-Result:
+The valid immediate range is 0 through 15.
 
-R0 = 5
-
-The immediate value must fit in the 4-bit
-destination register.
-
-Short and extended immediate forms are
-defined in the binary encoding specification.
+LDI always occupies two logical instruction units.
 
 LDI does not modify FLAGS.
+
+Examples:
+
+LDI R0, 5
+LDI R1, 15
+
 
 ### 4.2 MOV
 
