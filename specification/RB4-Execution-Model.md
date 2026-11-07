@@ -109,6 +109,12 @@ occupies two physical 4-bit positions.
 In RB4-B, one logical instruction unit
 occupies one physical 8-bit position.
 
+Instruction fetching uses the logical
+instruction address space.
+
+The MMIO data-address window does not
+redirect instruction fetching.
+
 ## 7. Instruction Decoding
 
 The processor decodes the fetched instruction
@@ -120,6 +126,10 @@ must be fetched before execution.
 
 The complete instruction length must be
 determined from the instruction format.
+
+The processor must validate all required
+operand fields and reserved bits before
+committing architectural state changes.
 
 ## 8. Program Counter Updates
 
@@ -134,6 +144,9 @@ according to the specified branch behavior.
 PC arithmetic uses modular 8-bit behavior.
 
 An address beyond 0xFF wraps to 0x00.
+
+The special boundary rule for incomplete
+instructions is defined in Section 17.
 
 ## 9. Instruction Execution
 
@@ -174,8 +187,9 @@ The processor enters FAULT when it encounters:
 - Invalid instruction format.
 - Invalid register selector.
 - Invalid operand combination.
+- Invalid reserved bits.
 - Incomplete instruction.
-- Invalid immediate value.
+- Invalid immediate format.
 - Access to an unimplemented or forbidden MMIO register.
 
 When FAULT occurs:
@@ -193,18 +207,20 @@ are not rolled back.
 The processor must not continue normal execution
 while in FAULT.
 
-
 ## 12. Incomplete Instructions
 
-An extended instruction may require
-additional logical instruction units.
+An instruction may require additional
+logical instruction units.
 
 If the complete instruction cannot be fetched
 before the end of the logical instruction
 address space, the processor enters FAULT.
 
 The processor must not execute only part
-of an extended instruction.
+of an instruction.
+
+The PC remains at the starting address
+of the incomplete instruction.
 
 ## 13. Program Counter Overflow
 
@@ -214,6 +230,10 @@ An increment beyond 0xFF wraps to 0x00.
 
 This behavior applies to sequential instruction
 execution and relative branch calculations.
+
+The modular arithmetic rule does not permit
+an incomplete multi-unit instruction to fetch
+its missing units from address 0x00.
 
 ## 14. Memory Behavior
 
@@ -259,26 +279,36 @@ A complete instruction ending at logical address 0xFF
 advances the PC to 0x00.
 
 However, an instruction that begins at 0xFF and requires
-additional logical instruction units is incomplete and
-causes FAULT.
+additional logical instruction units is incomplete
+and causes FAULT.
 
-The processor must not fetch the missing part from
-address 0x00.
+The processor must not fetch the missing part
+from address 0x00.
 
-This rule distinguishes normal PC wrap after a complete
-instruction from an instruction that crosses the end
-of the logical instruction address space.
+The PC remains at the starting address
+of the incomplete instruction.
+
+This rule distinguishes normal PC wrap after
+a complete instruction from an instruction
+that crosses the end of the logical instruction
+address space.
 
 ## 18. Malformed LDI Encoding
 
-LDI always occupies exactly two logical instruction units.
+LDI always occupies exactly two logical
+instruction units.
 
-The second unit must have its upper four bits set to zero.
+The first unit must use the format:
+
+0001 R000
+
+The second unit must have its upper four bits
+set to zero.
 
 The lower four bits contain the immediate value
 from 0 through 15.
 
-If the upper four bits of the second unit are nonzero,
+If the first or second unit violates this format,
 the instruction causes FAULT.
 
 No alternative short or extended LDI encoding exists.
@@ -294,8 +324,11 @@ LOAD and STORE accesses to logical data addresses
 If the selected platform profile does not implement
 the addressed MMIO register, the access causes FAULT.
 
-The MMIO register assignment is defined by the selected
-platform profile.
+The MMIO register assignment is defined by
+the selected platform profile.
+
+Instruction fetch remains directed to unified
+program memory.
 
 ## 20. Fault Atomicity
 
@@ -305,10 +338,8 @@ partially updated architectural register state.
 The architectural state of R0, R1 and FLAGS
 must remain unchanged by the failed instruction.
 
+The PC must remain at the starting address
+of the instruction that caused FAULT.
+
 This requirement does not imply rollback of
 external device effects that have already occurred.
-
-The PC identifies the starting address of
-the instruction that caused FAULT.
-
-
