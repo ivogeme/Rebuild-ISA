@@ -338,3 +338,45 @@ are not required to be rolled back.
 Tests must also verify that RESET clears
 the FAULT state and restores the initial
 architectural register values.
+
+## 19. Reference Platform Tests
+
+The reference MMIO platform profile
+RB4-REF-REG-1 is defined in:
+
+`RB4-Reference-Platform.md`
+
+The initial machine-readable MMIO test vectors
+are provided in:
+
+`tests/rb4-reference-profile-v1.json`
+
+These vectors verify:
+
+- MMIO register reads.
+- MMIO register writes.
+- MMIO register reset values.
+- LOAD and STORE routing.
+- Separation between MMIO data accesses
+  and instruction fetching.
+- Preservation of FLAGS during memory operations.
+
+The vectors provide a common baseline
+for independent implementations.
+
+They do not replace the mandatory
+conformance requirements defined
+in the preceding sections.
+
+A conformance report must identify:
+
+- The supported memory profile (RB4-N or RB4-B).
+- The supported platform profile.
+- The test suite version.
+- The number of tests passed.
+- The number of tests failed.
+- Any tests not executed.
+
+A complete RB4 conformance claim requires
+passing all mandatory tests applicable
+to the declared implementation.
