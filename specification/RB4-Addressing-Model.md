@@ -230,19 +230,26 @@ must not be visible to software.
 Compatible implementations must produce
 the same results for equivalent memory operations.
 
-## 15. Remaining Specification Decisions
+## 15. Finalized Addressing Rules
 
-The following details must be finalized
-before the addressing model is frozen:
+The following addressing rules are normative:
 
-- Confirmation of the 9-bit logical data address.
-- Confirmation of the nibble ordering.
-- Exact LOAD and STORE address encoding.
-- Exact MMIO address allocation.
-- Behavior of memory accesses to reserved
-  or unmapped regions.
-- Exact interaction between instruction
-  fetch and data writes during execution.
+- Logical instruction addresses are 8 bits.
+- Logical data addresses are 9 bits.
+- Logical data addresses range from 0x000 to 0x1FF.
+- Each logical data address identifies one 4-bit value.
+- RB4-N uses two physical nibbles per logical instruction unit.
+- RB4-B uses one physical byte per logical instruction unit.
+- RB4-B selector 0 selects the lower nibble.
+- RB4-B selector 1 selects the upper nibble.
+- RB4-N assembles instruction units with the first
+  physical nibble as the low-order nibble.
+- LOAD and STORE use 9-bit logical data addresses.
+- MMIO occupies logical data addresses 0x1F0–0x1FF.
+- Instruction fetching is not redirected by MMIO.
+
+The physical representation must remain
+invisible to RB4 software.
 
 
   ## 16. Ratified Addressing Decisions
@@ -282,15 +289,14 @@ The assignment of individual device registers within this
 16-nibble window is platform-profile-defined. Access to an
 unimplemented register causes FAULT.
 
-## 18. Remaining Address-Encoding Work
+## 18. Invalid Data Addresses
 
-The 9-bit logical data address width, RB4-B nibble ordering,
-and RB4-N instruction nibble ordering are now fixed.
+LOAD and STORE use a 9-bit address field.
 
-The exact binary representation of a 9-bit address in LOAD
-and STORE instructions remains to be specified in the binary
-encoding table.
+All values from 0x000 through 0x1FF are
+representable.
 
-The behavior of any memory access outside the defined logical
-data-address range is invalid and causes FAULT. No such
-address is representable by a conforming 9-bit address field.
+The MMIO window occupies 0x1F0 through 0x1FF.
+
+An access to an unimplemented or forbidden
+MMIO register causes FAULT.
