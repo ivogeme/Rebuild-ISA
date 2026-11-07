@@ -137,6 +137,14 @@ Tests must verify that:
 - MOV and LDI preserve FLAGS.
 - LOAD and STORE preserve FLAGS.
 
+LDI tests must verify that:
+
+- LDI always occupies two logical instruction units.
+- The second unit has its upper four bits set to zero.
+- The lower four bits contain the immediate value.
+- Invalid second-unit formats cause FAULT.
+- Immediate values from 0 through 15 are loaded correctly.
+
 ## 8. Branching Tests
 
 The following operations must be tested:
@@ -144,6 +152,9 @@ The following operations must be tested:
 - JMP
 - JZ
 - JNZ
+- JR
+- JRZ
+- JRNZ
 
 Tests must verify:
 
@@ -151,13 +162,18 @@ Tests must verify:
 - Relative branching.
 - Positive relative offsets.
 - Negative relative offsets.
+- Zero relative offsets.
 - Branches based on Z = 1.
 - Branches based on Z = 0.
 - PC wrapping behavior.
+- Correct calculation of relative branch targets.
 
 Relative offsets must be calculated
 from the address immediately following
 the complete branch instruction.
+
+Tests must verify that relative branches
+preserve FLAGS.
 
 ## 9. Control Tests
 
@@ -211,8 +227,10 @@ Tests must verify:
 - Valid subopcode decoding.
 - Valid register selectors.
 - Valid immediate formats.
-- Valid extended instruction formats.
-- Correct instruction lengths.
+- Valid instruction lengths.
+- Valid operand combinations.
+- Required reserved bits.
+- Correct relative branch encoding.
 
 Reserved and invalid encodings must
 not execute as valid instructions.
@@ -227,7 +245,10 @@ when encountering:
 - Invalid register selector.
 - Invalid operand combination.
 - Invalid instruction format.
-- Incomplete extended instruction.
+- Invalid reserved bits.
+- Incomplete multi-unit instruction.
+- Malformed LDI encoding.
+- Access to an unimplemented or forbidden MMIO register.
 
 The processor must remain in FAULT
 until reset.
@@ -272,18 +293,18 @@ for its declared memory profile.
 Partial implementations must clearly
 identify unsupported architectural features.
 
-
 ## 17. Ratified Decision Tests
 
 The conformance suite must additionally verify:
 
 - Logical data addresses are 9 bits and cover 0x000–0x1FF.
-- RB4-B selector 0 reads/writes bits 3:0 and selector 1
-  reads/writes bits 7:4.
+- RB4-B selector 0 reads and writes bits 3:0.
+- RB4-B selector 1 reads and writes bits 7:4.
 - A STORE to one RB4-B nibble preserves the other nibble.
 - RB4-N instruction assembly uses the first physical nibble
   as bits 3:0 and the second as bits 7:4.
-- Extended LDI values greater than 15 cause FAULT.
+- A malformed LDI second unit with nonzero upper four bits
+  causes FAULT.
 - A complete instruction ending at 0xFF advances PC to 0x00.
 - An instruction beginning at 0xFF that requires another
   logical unit causes FAULT and does not wrap to fetch it.
@@ -291,10 +312,13 @@ The conformance suite must additionally verify:
 - Access to an unimplemented MMIO register causes FAULT.
 - The main opcode group values match the approved table
   in RB4-Binary-Encoding.md.
+- Relative branch offsets use signed 8-bit two's complement.
+- Relative branch targets are calculated from the PC
+  immediately following the complete branch instruction.
+- Relative branch calculations wrap modulo 256.
 
 The final binary test programs and expected states must be
-added when the complete subopcode and operand encoding is
-published.
+added when the official test suite is published.
 
 ## 18. Fault Atomicity Tests
 
@@ -314,4 +338,3 @@ are not required to be rolled back.
 Tests must also verify that RESET clears
 the FAULT state and restores the initial
 architectural register values.
-
