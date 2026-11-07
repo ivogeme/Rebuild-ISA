@@ -296,3 +296,22 @@ The final binary test programs and expected states must be
 added when the complete subopcode and operand encoding is
 published.
 
+## 18. Fault Atomicity Tests
+
+The conformance suite must verify that
+a faulting instruction:
+
+- Leaves PC at the starting instruction address.
+- Does not partially modify R0.
+- Does not partially modify R1.
+- Does not partially modify FLAGS.
+- Prevents subsequent instructions from executing.
+- Leaves the processor in FAULT until RESET.
+
+External MMIO effects already performed
+are not required to be rolled back.
+
+Tests must also verify that RESET clears
+the FAULT state and restores the initial
+architectural register values.
+
