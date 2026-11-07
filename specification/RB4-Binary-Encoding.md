@@ -240,20 +240,125 @@ a new architecture revision.
 Compatible implementations must interpret
 the same binary program identically.
 
-## 15. Final Opcode Allocation
+## 15. Canonical Instruction Encoding
 
-The following information remains to be finalized:
+The following encoding is normative for
+the RB4 base instruction set.
 
-- Main opcode allocation.
-- Subopcode allocation.
-- Operand field interpretation.
-- Extended instruction formats.
-- Exact instruction lengths.
-- Relative offset widths.
-- Reserved encoding ranges.
+All instructions use one, two or three
+logical 8-bit instruction units.
 
-These assignments must be published
-before the RB4 binary encoding is frozen.
+The first unit determines the instruction
+format and total instruction length.
+
+No alternative encoding is permitted
+for an already defined base instruction.
+
+### 15.1 Control
+
+NOP:
+0000 0000
+
+HALT:
+0000 0001
+
+All other Control encodings are invalid.
+
+### 15.2 LDI
+
+First unit:
+0001 R000
+
+Second unit:
+0000 IIII
+
+### 15.3 MOV and Register Operations
+
+MOV, ADD, SUB, AND and OR:
+
+OOOO D S 00
+
+D selects the destination register.
+S selects the source register.
+
+### 15.4 INC and DEC
+
+0110 O R 00
+
+O = 0: INC
+O = 1: DEC
+
+R selects the register.
+
+### 15.5 XOR and NOT
+
+XOR:
+
+1001 0 D S 0
+
+NOT:
+
+1001 1 R 00
+
+### 15.6 LOAD and STORE
+
+First unit:
+
+0011 W R 00
+
+Second unit:
+
+A7 A6 A5 A4 A3 A2 A1 A0
+
+Third unit:
+
+0000000 A8
+
+W = 0: LOAD
+W = 1: STORE
+
+R selects the register.
+
+### 15.7 Absolute JMP
+
+First unit:
+
+1010 0000
+
+Second unit:
+
+AAAAAAAA
+
+### 15.8 Conditional Absolute Jumps
+
+First unit:
+
+1011 C000
+
+Second unit:
+
+AAAAAAAA
+
+C = 0: JZ
+C = 1: JNZ
+
+### 15.9 Relative Jumps
+
+First unit:
+
+1100 CC00
+
+Second unit:
+
+SSSSSSSS
+
+CC = 00: unconditional relative jump
+CC = 01: relative JZ
+CC = 10: relative JNZ
+CC = 11: invalid
+
+The offset is an 8-bit signed two's
+complement value.
 
 ## 16. Ratified Main Opcode Groups
 
