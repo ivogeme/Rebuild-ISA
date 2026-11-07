@@ -75,15 +75,43 @@ Invalid register selectors cause FAULT.
 
 ## 6. Immediate Values
 
-RB4 supports short and extended immediate values.
+LDI is the only base instruction that loads
+an immediate value into a general-purpose register.
 
-### 6.1 Short Immediate
+LDI always occupies exactly two logical
+instruction units.
 
-A short immediate uses the 4-bit operand field.
+The first unit contains the opcode and
+destination register selector.
 
-Its unsigned range is:
+The second unit contains the immediate value.
 
-0 to 15.
+The valid immediate range is 0 through 15.
+
+No short one-unit LDI form exists.
+
+An immediate value outside this range causes FAULT.
+Implementations must not truncate or wrap
+the immediate value.
+
+### 6.1 LDI Encoding
+
+First unit:
+
+0001 R000
+
+Second unit:
+
+0000 IIII
+
+R selects the destination register.
+
+IIII represents the unsigned 4-bit immediate.
+
+Examples:
+
+LDI R0, 5: 10 05
+LDI R1, 15: 18 0F
 
 ### 6.2 Extended Immediate
 
