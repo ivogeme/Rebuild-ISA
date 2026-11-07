@@ -230,3 +230,49 @@ memory normally.
 
 An access to an MMIO register not implemented by the selected
 platform profile must cause FAULT.
+
+
+## 15. Instruction Encoding Requirements
+
+Implementations must use the canonical instruction
+encoding defined in RB4-Binary-Encoding.md.
+
+Alternative encodings for base instructions
+are not permitted.
+
+All undefined and reserved base encodings
+must cause FAULT.
+
+LDI must always use two logical instruction units.
+
+LOAD and STORE must use three logical
+instruction units.
+
+Absolute and relative jumps must use
+their specified instruction lengths.
+
+## 16. Fault Handling Requirements
+
+Implementations must preserve the following
+architectural behavior when FAULT occurs:
+
+- PC remains at the faulting instruction start.
+- R0 and R1 are not partially modified.
+- FLAGS is not partially modified.
+- Execution stops.
+- FAULT persists until RESET.
+
+External MMIO effects are not rolled back.
+
+## 17. Memory and MMIO Requirements
+
+Implementations must provide the defined
+9-bit logical data address space.
+
+The MMIO data-address window is 0x1F0–0x1FF.
+
+Instruction fetch must remain independent
+of the MMIO data-access overlay.
+
+Access to unimplemented or forbidden
+MMIO registers must cause FAULT.
