@@ -74,12 +74,14 @@ one physical memory position.
 A physical 8-bit position can also store
 two logical 4-bit values.
 
-The implementation must define the nibble ordering
-used when accessing the two logical 4-bit values
-inside one physical position.
+The nibble ordering is fixed by the RB4 architecture.
 
-The nibble ordering must be consistent throughout
-the implementation.
+Selector 0 accesses the lower four bits (bits 3:0).
+
+Selector 1 accesses the upper four bits (bits 7:4).
+
+All compatible implementations must use this ordering.
+
 
 ## 5. Logical Instruction Units
 
@@ -190,10 +192,15 @@ Possible devices include:
 - Serial interfaces.
 - Timers.
 
-The exact device address map is defined by
-the implementation or a future standard extension.
+The MMIO data-address window is fixed at
+logical addresses 0x1F0 through 0x1FF.
 
-The MMIO mechanism is part of the architecture.
+The assignment of individual device registers
+within this window is defined by the selected
+platform profile.
+
+Access to an unimplemented or forbidden
+MMIO register causes FAULT.
 
 ## 11. Physical Memory Mapping
 
