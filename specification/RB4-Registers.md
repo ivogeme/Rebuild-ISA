@@ -181,3 +181,47 @@ the register widths and behaviors defined here.
 
 Internal implementation differences must not
 change the architectural state visible to software.
+
+## 11. Canonical Register Update Rules
+
+R0 and R1 are 4-bit registers.
+
+PC is an 8-bit logical instruction address.
+
+FLAGS contains only two bits:
+
+- Bit 0: Z
+- Bit 1: C
+
+The following operations update both applicable flags:
+
+- ADD
+- SUB
+- INC
+- DEC
+
+Logical operations update Z and clear C:
+
+- AND
+- OR
+- XOR
+- NOT
+
+The following instructions preserve FLAGS:
+
+- MOV
+- LDI
+- LOAD
+- STORE
+- JMP
+- JZ
+- JNZ
+- JR
+- JRZ
+- JRNZ
+- NOP
+- HALT
+
+RESET sets all architectural registers to zero.
+
+
