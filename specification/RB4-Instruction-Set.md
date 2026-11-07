@@ -171,12 +171,19 @@ in the addressing specification.
 
 STORE does not modify FLAGS.
 
+
+
 ## 5. Arithmetic Instructions
 
-All arithmetic results are stored as 4-bit values.
+Arithmetic operations produce 4-bit results.
 
-Values exceeding the 4-bit range are truncated
-to their lowest four bits.
+The stored result is calculated modulo 16.
+
+The Carry/Borrow flag records the condition
+that occurred beyond the 4-bit result.
+
+Invalid instruction operands and invalid
+immediate values must cause FAULT..
 
 ### 5.1 ADD
 
