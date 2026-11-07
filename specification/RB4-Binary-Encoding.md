@@ -13,7 +13,10 @@ the physical memory profile.
 RB4-N and RB4-B must interpret the same
 logical instruction stream identically.
 
-Instructions may have variable lengths.
+Instructions have variable lengths.
+
+Every base instruction has a defined
+binary encoding and instruction length.
 
 ## 2. Logical Instruction Unit
 
@@ -29,7 +32,7 @@ the logical instruction unit.
 
 ## 3. Basic Instruction Format
 
-The proposed basic instruction format is:
+The RB4 basic instruction format is:
 
 | Field | Width |
 |---|---:|
@@ -56,20 +59,23 @@ may use additional subopcode fields.
 A grouped instruction may interpret part or all
 of its operand field as a subopcode.
 
-The exact allocation must be defined in the
-final opcode table.
+The main opcode allocation is defined
+in Section 16.
+
+The valid operand layouts and complete
+instruction encodings are defined in Section 15.
 
 ## 5. Register Encoding
 
 RB4 provides two general-purpose registers:
 
-| Register | Proposed Encoding |
+| Register | Encoding |
 |---|---|
 | R0 | 0 |
 | R1 | 1 |
 
 Other register selector values are reserved
-unless explicitly assigned by the final encoding.
+unless explicitly assigned by the base encoding.
 
 Invalid register selectors cause FAULT.
 
@@ -91,6 +97,7 @@ The valid immediate range is 0 through 15.
 No short one-unit LDI form exists.
 
 An immediate value outside this range causes FAULT.
+
 Implementations must not truncate or wrap
 the immediate value.
 
@@ -117,32 +124,39 @@ LDI R1, 15: 18 0F
 
 LDI always uses exactly two logical instruction units.
 
-The second unit must have its upper four bits set to zero.
+The second unit must have its upper four bits
+set to zero.
 
 The lower four bits contain the immediate value,
 which must be in the range 0 through 15.
 
-Any LDI encoding that violates this format causes FAULT.
+Any LDI encoding that violates this format
+causes FAULT.
 
 No short or extended LDI alternative encoding exists.
 
-
 ## 7. Extended Instructions
 
-An instruction may contain additional 8-bit
-logical instruction units.
+The base architecture defines the instruction
+formats and lengths listed in Section 15.
 
-These units may encode:
+Additional instruction formats may be introduced
+only through explicitly documented extensions.
 
-- Immediate values.
-- Absolute addresses.
-- Relative offsets.
-- Extended operands.
+An extension must define:
 
-The instruction length is determined by
-the opcode and its assigned format.
+- Its opcode or subopcode allocation.
+- Its complete binary format.
+- Its instruction length.
+- Its operand interpretation.
+- Its execution behavior.
+- Its invalid encoding behavior.
 
-The PC advances by the complete instruction length.
+An extension must not change the meaning
+of an existing base instruction.
+
+Reserved encodings must not be interpreted
+as valid instructions by a base implementation.
 
 ## 8. Absolute Branch Encoding
 
@@ -155,36 +169,75 @@ The target range is:
 
 The target identifies a logical instruction position.
 
+The target is interpreted as an absolute
+logical instruction address.
+
 ## 9. Relative Branch Encoding
 
-Relative branches use signed offsets.
+Relative branches use signed 8-bit offsets.
 
 Offsets are represented using two's complement.
 
 The offset is added to the logical address
-immediately following the branch instruction.
+immediately following the complete branch instruction.
+
+The offset range is:
+
+-128 to +127.
+
+The target address is calculated as:
+
+Target = (PC_after_instruction + SignExtend(offset)) mod 256
 
 PC arithmetic wraps modulo 256.
 
-The exact offset width and encoding form
-must be specified in the final opcode table.
+The relative offset is stored in the second
+logical instruction unit.
+
+The first logical instruction unit identifies
+the relative branch operation.
 
 ## 10. Instruction Length
 
 RB4 supports variable-length instructions.
 
-An instruction may occupy:
+Base instructions occupy one, two or three
+logical 8-bit instruction units.
 
-- One logical 8-bit unit.
-- Two logical 8-bit units.
-- Additional units if explicitly defined
-  by a future compatible extension.
+The base instruction lengths are:
 
-Every instruction format must define
-its exact length.
+| Instruction | Length |
+|---|---:|
+| NOP | 1 unit |
+| HALT | 1 unit |
+| LDI | 2 units |
+| MOV | 1 unit |
+| ADD | 1 unit |
+| SUB | 1 unit |
+| INC | 1 unit |
+| DEC | 1 unit |
+| AND | 1 unit |
+| OR | 1 unit |
+| XOR | 1 unit |
+| NOT | 1 unit |
+| LOAD | 3 units |
+| STORE | 3 units |
+| JMP | 2 units |
+| JZ | 2 units |
+| JNZ | 2 units |
+| JR | 2 units |
+| JRZ | 2 units |
+| JRNZ | 2 units |
 
-The decoder must know the complete instruction
-length before executing the instruction.
+The first unit determines the instruction
+format and total instruction length.
+
+The decoder must retrieve all required
+instruction units before executing the instruction.
+
+An incomplete multi-unit instruction at the
+end of the logical instruction address space
+causes FAULT.
 
 ## 11. Reserved Encodings
 
@@ -196,6 +249,10 @@ meanings by independent compatible implementations.
 Future extensions may use reserved encodings
 when their behavior is formally documented.
 
+A base implementation must cause FAULT when
+it encounters an encoding that is not defined
+by the base instruction set.
+
 ## 12. Invalid Instructions
 
 The following conditions cause FAULT:
@@ -205,11 +262,15 @@ The following conditions cause FAULT:
 - Invalid register selector.
 - Invalid operand combination.
 - Invalid instruction format.
-- Incomplete extended instruction at the end
+- Invalid reserved bits.
+- Incomplete multi-unit instruction at the end
   of the logical instruction address space.
 
 The processor must not execute an incomplete
-extended instruction.
+instruction.
+
+The detailed architectural fault behavior is
+defined in `RB4-Execution-Model.md`.
 
 ## 13. Instruction Fetch
 
@@ -226,6 +287,12 @@ from two physical 4-bit positions.
 In RB4-B, each logical unit is obtained
 from one physical 8-bit position.
 
+The logical instruction stream must be
+identical in both physical memory profiles.
+
+Instruction fetching is not redirected by
+the MMIO data-address window.
+
 ## 14. Encoding Compatibility
 
 The binary meaning of an instruction must
@@ -237,12 +304,15 @@ a new architecture revision.
 Compatible implementations must interpret
 the same binary program identically.
 
+The physical memory profile must not alter
+the meaning or length of an instruction.
+
 ## 15. Canonical Instruction Encoding
 
 The following encoding is normative for
 the RB4 base instruction set.
 
-All instructions use one, two or three
+All base instructions use one, two or three
 logical 8-bit instruction units.
 
 The first unit determines the instruction
@@ -254,35 +324,55 @@ for an already defined base instruction.
 ### 15.1 Control
 
 NOP:
+
 0000 0000
 
 HALT:
+
 0000 0001
 
-All other Control encodings are invalid.
+All other Control encodings are invalid
+and cause FAULT.
 
 ### 15.2 LDI
 
 First unit:
+
 0001 R000
 
 Second unit:
+
 0000 IIII
+
+R selects the destination register.
+
+IIII represents the unsigned 4-bit immediate.
+
+The valid immediate range is 0 through 15.
+
+The second unit must have its upper four bits
+set to zero.
 
 ### 15.3 MOV and Register Operations
 
-MOV, ADD, SUB, AND and OR:
+MOV, ADD, SUB, AND and OR use the format:
 
 OOOO D S 00
 
 D selects the destination register.
+
 S selects the source register.
 
+The main opcode determines the operation.
+
 ### 15.4 INC and DEC
+
+Format:
 
 0110 O R 00
 
 O = 0: INC
+
 O = 1: DEC
 
 R selects the register.
@@ -293,9 +383,15 @@ XOR:
 
 1001 0 D S 0
 
+D selects the destination register.
+
+S selects the source register.
+
 NOT:
 
 1001 1 R 00
+
+R selects the register.
 
 ### 15.6 LOAD and STORE
 
@@ -312,9 +408,15 @@ Third unit:
 0000000 A8
 
 W = 0: LOAD
+
 W = 1: STORE
 
 R selects the register.
+
+A8 through A0 form the 9-bit logical data address.
+
+The third unit must have bits 7 through 1
+set to zero.
 
 ### 15.7 Absolute JMP
 
@@ -325,6 +427,9 @@ First unit:
 Second unit:
 
 AAAAAAAA
+
+The second unit contains the absolute
+8-bit logical instruction target.
 
 ### 15.8 Conditional Absolute Jumps
 
@@ -337,7 +442,11 @@ Second unit:
 AAAAAAAA
 
 C = 0: JZ
+
 C = 1: JNZ
+
+The second unit contains the absolute
+8-bit logical instruction target.
 
 ### 15.9 Relative Jumps
 
@@ -349,13 +458,21 @@ Second unit:
 
 SSSSSSSS
 
-CC = 00: unconditional relative jump
-CC = 01: relative JZ
-CC = 10: relative JNZ
+CC = 00: JR
+
+CC = 01: JRZ
+
+CC = 10: JRNZ
+
 CC = 11: invalid
 
-The offset is an 8-bit signed two's
-complement value.
+The second unit contains a signed 8-bit
+two's complement offset.
+
+The offset is added to the PC value
+immediately following the complete instruction.
+
+The target is calculated modulo 256.
 
 ## 16. Ratified Main Opcode Groups
 
@@ -388,58 +505,80 @@ are defined in Section 15.
 
 All defined base instruction encodings are normative.
 
-Unassigned subopcodes and reserved encodings cause FAULT.
+Unassigned subopcodes and reserved encodings
+cause FAULT in the base architecture.
 
 ## 17. LDI Format Validation
 
-LDI always occupies exactly two logical instruction units.
+LDI always occupies exactly two logical
+instruction units.
 
 The first unit identifies the destination register.
 
-The second unit must use the format 0000 IIII.
+The second unit must use the format:
 
-The upper four bits of the second unit must be zero.
+0000 IIII
 
-The lower four bits represent the immediate value
-from 0 through 15.
+The upper four bits of the second unit
+must be zero.
+
+The lower four bits represent the immediate
+value from 0 through 15.
 
 Any other second-unit format causes FAULT.
 
-Implementations must not truncate, wrap or reinterpret
-an invalid LDI encoding.
-
+Implementations must not truncate, wrap
+or reinterpret an invalid LDI encoding.
 
 ## 18. Relative PC Boundary Rule
 
-PC arithmetic is modular over 8 bits. A complete instruction
-whose final logical unit is at address 0xFF may advance the PC
+PC arithmetic is modular over 8 bits.
+
+A complete instruction whose final logical
+unit is at address 0xFF may advance the PC
 to 0x00.
 
-An instruction beginning at 0xFF that requires one or more
-additional logical instruction units is incomplete and causes
-FAULT. Instruction fetch for an incomplete instruction does not
-wrap around to address 0x00 to complete that instruction.
+An instruction beginning at 0xFF that requires
+one or more additional logical instruction units
+is incomplete and causes FAULT.
+
+Instruction fetch for an incomplete instruction
+does not wrap around to address 0x00 to complete
+that instruction.
 
 ## 19. Logical Data Address Width
 
-Logical data addresses are 9 bits wide and identify one of
-512 logical 4-bit positions, from 0x000 through 0x1FF.
-The physical memory profile must not change this logical address
-width or its meaning.
+Logical data addresses are 9 bits wide.
+
+They identify one of 512 logical 4-bit positions.
+
+The valid logical data address range is:
+
+0x000 through 0x1FF.
+
+The physical memory profile must not change
+this logical address width or its meaning.
+
+LOAD and STORE use the complete 9-bit
+logical data address.
 
 ## 20. MMIO Data-Address Window
 
-The logical data-address range 0x1F0 through 0x1FF is reserved
-for memory-mapped input/output access. LOAD and STORE accesses
-to this range are routed to the MMIO interface rather than
-ordinary RAM.
+The logical data-address range 0x1F0 through
+0x1FF is reserved for memory-mapped input/output.
 
-Instruction fetch continues to use the unified program memory
-and is not redirected by this data-access MMIO window.
-This permits instruction storage at every logical instruction
-address, including 0xF8 through 0xFF.
+LOAD and STORE accesses to this range are routed
+to the MMIO interface rather than ordinary RAM.
 
-The device-register assignment within the MMIO window is
-implementation- or platform-profile-defined. An access to an
-unimplemented MMIO register causes FAULT. A common peripheral
-register map remains a future standardization task.
+Instruction fetch continues to use unified
+program memory and is not redirected by
+this data-access MMIO window.
+
+The device-register assignment within the MMIO
+window is defined by the selected platform profile.
+
+An access to an unimplemented or forbidden
+MMIO register causes FAULT.
+
+A common peripheral register map remains
+a future standardization task.
