@@ -33,6 +33,7 @@ same programs while using different internal designs.
 | Status register | 2 bits |
 | Logical instruction unit | 8 bits |
 | Logical instruction address width | 8 bits |
+| Logical data address width | 9 bits |
 | Memory profiles | RB4-N and RB4-B |
 | Organization | RISC |
 | Memory model | Unified |
@@ -106,7 +107,7 @@ instruction set specification.
 
 RB4 uses logical instruction units of 8 bits.
 
-The basic instruction format is designed around:
+The basic instruction format contains:
 
 - 4-bit opcode field.
 - 4-bit operand field.
@@ -116,11 +117,8 @@ The architecture supports variable-length instructions.
 Each base instruction has a defined length
 of one, two or three logical instruction units.
 
-The exact length and encoding of each instruction
-are defined in RB4-Binary-Encoding.md.
-
-
-The complete binary encoding is defined in
+The exact length and binary encoding of each
+base instruction are defined in
 `RB4-Binary-Encoding.md`.
 
 ## 7. Memory Architecture
@@ -158,8 +156,10 @@ positions is defined in the addressing specification.
 
 RB4 supports memory-mapped input/output.
 
-External devices may be accessed through memory
-addresses assigned to I/O functions.
+External devices are accessed through the reserved
+logical data-address window:
+
+0x1F0 through 0x1FF.
 
 Possible devices include:
 
@@ -170,11 +170,18 @@ Possible devices include:
 - Serial interfaces.
 - Timers.
 
-The architecture requires the MMIO mechanism.
+The MMIO mechanism and its logical address window
+are part of the RB4 base architecture.
 
-The exact peripheral address map is not mandatory
-for the base architecture and may be defined by
-an implementation or a future standard extension.
+The assignment of individual device registers
+within this window is defined by the selected
+platform profile.
+
+Access to an unimplemented or forbidden MMIO
+register causes FAULT.
+
+Instruction fetching is not redirected by the
+MMIO data-address window.
 
 ## 9. Architectural Limitations
 
@@ -243,6 +250,10 @@ Reserved encodings must remain available for
 future compatible extensions where applicable.
 
 Any incompatible architectural change must be
+documented as a new architecture revision.
+
+An incompatible change must not be presented
+as a compatible extension of the RB4 base architecture.
 
 ## 13. Ratified Base Architecture
 
@@ -259,13 +270,17 @@ The RB4 base architecture defines:
 - RB4-N and RB4-B physical memory profiles.
 - Absolute and relative branching.
 - Memory-mapped input/output.
+- An MMIO data-address window from 0x1F0 to 0x1FF.
 - RUNNING, HALTED and FAULT execution states.
 
 The base instruction encoding is defined
-in RB4-Binary-Encoding.md.
+in `RB4-Binary-Encoding.md`.
 
 The base execution behavior is defined
-in RB4-Execution-Model.md.
+in `RB4-Execution-Model.md`.
 
 The base memory behavior is defined
-in RB4-Memory-Model.md.
+in `RB4-Memory-Model.md`.
+
+The logical and physical addressing rules
+are defined in `RB4-Addressing-Model.md`.
