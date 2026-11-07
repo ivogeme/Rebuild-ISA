@@ -181,7 +181,22 @@ Access to an unimplemented or forbidden MMIO
 register causes FAULT.
 
 Instruction fetching is not redirected by the
-MMIO data-address window.
+MMIO data-address window
+
+The MMIO data-address window affects only
+logical data accesses.
+
+Instruction fetching continues to access
+the unified program memory normally.
+
+The reserved MMIO window does not remove
+or renumber logical instruction addresses.
+
+Of the 512 logical data addresses, 16 are
+reserved for MMIO, leaving 496 logical nibble
+addresses directly accessible as ordinary RAM
+through LOAD and STORE.
+.
 
 ## 9. Architectural Limitations
 
