@@ -340,6 +340,29 @@ The jump occurs when Z = 0.
 
 If Z = 1, execution continues with the next instruction.
 
+### 7.4 Relative Branches
+
+RB4 provides three relative branch operations:
+
+JR
+JRZ
+JRNZ
+
+JR always branches.
+
+JRZ branches when Z = 1.
+
+JRNZ branches when Z = 0.
+
+The signed 8-bit offset is added to the
+logical address immediately following
+the complete branch instruction.
+
+The calculation uses modular 8-bit PC arithmetic.
+
+Relative branches do not modify FLAGS.
+
+
 ## 8. Absolute Branching
 
 Absolute jumps use an explicit logical
