@@ -20,11 +20,11 @@ The architecture provides two general-purpose registers:
 - R1
 
 Instructions may use additional logical instruction
-units when extended operands are required.
+units when operands or addresses require them.
 
 ## 2. Instruction Categories
 
-The proposed base instruction set contains:
+The RB4 base instruction set contains:
 
 ### Control
 
@@ -61,8 +61,9 @@ The proposed base instruction set contains:
 | NOT | Bitwise inversion |
 
 ### Branching
+
 | Instruction | Description |
-| --- | --- |
+|---|---|
 | JMP | Absolute unconditional jump |
 | JZ | Absolute jump if zero |
 | JNZ | Absolute jump if not zero |
@@ -120,7 +121,6 @@ Examples:
 LDI R0, 5
 LDI R1, 15
 
-
 ### 4.2 MOV
 
 MOV copies the contents of one register
@@ -151,8 +151,7 @@ Result:
 
 R0 = memory[address]
 
-The exact address representation is defined
-in the addressing specification.
+The address is a 9-bit logical data address.
 
 LOAD does not modify FLAGS.
 
@@ -168,12 +167,12 @@ Result:
 
 memory[address] = R0
 
-The exact address representation is defined
-in the addressing specification.
+The address is a 9-bit logical data address.
 
 STORE does not modify FLAGS.
 
-
+Addresses 0x1F0 through 0x1FF are reserved
+for MMIO data accesses.
 
 ## 5. Arithmetic Instructions
 
@@ -185,7 +184,7 @@ The Carry/Borrow flag records the condition
 that occurred beyond the 4-bit result.
 
 Invalid instruction operands and invalid
-immediate values must cause FAULT.
+instruction formats must cause FAULT.
 
 ### 5.1 ADD
 
@@ -322,33 +321,36 @@ C is cleared.
 
 ### 7.1 JMP
 
-JMP performs an unconditional jump.
+JMP performs an unconditional absolute jump.
 
-The PC is changed to the specified target address.
+The PC is changed to the specified
+8-bit logical instruction target address.
 
 ### 7.2 JZ
 
-JZ performs a conditional jump.
+JZ performs a conditional absolute jump.
 
 The jump occurs when Z = 1.
 
-If Z = 0, execution continues with the next instruction.
+If Z = 0, execution continues with the
+logical instruction immediately following JZ.
 
 ### 7.3 JNZ
 
-JNZ performs a conditional jump.
+JNZ performs a conditional absolute jump.
 
 The jump occurs when Z = 0.
 
-If Z = 1, execution continues with the next instruction.
+If Z = 1, execution continues with the
+logical instruction immediately following JNZ.
 
 ### 7.4 Relative Branches
 
 RB4 provides three relative branch operations:
 
-JR
-JRZ
-JRNZ
+- JR
+- JRZ
+- JRNZ
 
 JR always branches.
 
@@ -360,39 +362,44 @@ The signed 8-bit offset is added to the
 logical address immediately following
 the complete branch instruction.
 
-The calculation uses modular 8-bit PC arithmetic.
+The target is calculated as:
+
+Target = (PC_after_instruction + SignExtend(offset)) mod 256
 
 Relative branches do not modify FLAGS.
-
 
 ## 8. Absolute Branching
 
 Absolute jumps use an explicit logical
 instruction address.
 
-The target address is interpreted as an
-8-bit logical instruction address.
+The target address is an 8-bit value
+from 0x00 through 0xFF.
 
 The PC is updated to the specified target.
 
 ## 9. Relative Branching
 
-Relative jumps use signed offsets represented
-in two's complement.
+Relative jumps use signed 8-bit offsets
+represented in two's complement.
+
+The offset range is:
+
+-128 to +127.
 
 The offset is added to the logical address
-of the instruction immediately following
-the branch instruction.
+immediately following the complete
+branch instruction.
 
 The result uses modular 8-bit PC arithmetic.
 
-The exact offset encoding is defined in
-the binary encoding specification.
+The binary encoding is defined in
+`RB4-Binary-Encoding.md`.
 
 ## 10. Flag Update Summary
 
 | Instruction | Z behavior | C behavior |
-| --- | --- | --- |
+|---|---|---|
 | ADD | Updated | Carry |
 | SUB | Updated | Borrow |
 | INC | Updated | Carry |
@@ -422,7 +429,7 @@ NOP performs no architectural operation.
 
 It does not modify registers or FLAGS.
 
-The PC advances according to the instruction length.
+The PC advances by one logical instruction unit.
 
 ### 11.2 HALT
 
@@ -442,16 +449,20 @@ The basic instruction format uses:
 - 4-bit opcode field.
 - 4-bit operand field.
 
-Additional logical instruction units may be used
-for extended operands.
+Base instructions occupy one, two or three
+logical instruction units.
 
-The final opcode and subopcode allocation
-is defined in the binary encoding specification.
+The canonical opcode and operand allocation
+is defined in `RB4-Binary-Encoding.md`.
 
 ## 13. Invalid Instructions
 
-Invalid opcodes, invalid operand combinations
-and invalid instruction formats cause FAULT.
+Invalid opcodes, invalid operand combinations,
+invalid register selectors and invalid instruction
+formats cause FAULT.
+
+Reserved bits must have the values specified
+by the canonical binary encoding.
 
 The processor must not silently execute
 an undefined instruction as another operation.
@@ -465,18 +476,22 @@ New instructions must use reserved encodings
 or be introduced through a documented
 architectural extension.
 
-
-
+An incompatible change requires a new
+architecture revision.
 
 ## 15. Canonical LDI Validation
 
-LDI always occupies exactly two logical instruction units.
+LDI always occupies exactly two logical
+instruction units.
 
 The first unit identifies the destination register.
 
-The second unit must use the format 0000 IIII.
+The second unit must use the format:
 
-The upper four bits of the second unit must be zero.
+0000 IIII
+
+The upper four bits of the second unit
+must be zero.
 
 The lower four bits represent the immediate value
 from 0 through 15.
@@ -485,17 +500,22 @@ Any invalid LDI encoding causes FAULT.
 
 No short or extended LDI alternative encoding exists.
 
-Implementations must not truncate, wrap or reinterpret
-an invalid immediate value.
+Implementations must not truncate, wrap
+or reinterpret an invalid immediate value.
 
 ## 16. Memory-Mapped I/O Accesses
 
 LOAD and STORE use 9-bit logical data addresses.
 
-Addresses 0x1F0 through 0x1FF are reserved for MMIO
-and access the MMIO interface instead of ordinary RAM.
+Addresses 0x1F0 through 0x1FF are reserved
+for MMIO and access the MMIO interface
+instead of ordinary RAM.
 
-An access to an unimplemented MMIO register causes FAULT.
+An access to an unimplemented or forbidden
+MMIO register causes FAULT.
 
-The individual register assignments are defined by the
-selected platform profile.
+The individual register assignments are defined
+by the selected platform profile.
+
+Instruction fetching is not redirected
+by the MMIO data-address window.
