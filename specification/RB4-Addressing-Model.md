@@ -107,7 +107,6 @@ Canonical mapping:
 
 PhysicalAddress = LogicalDataAddress
 
-
 For instruction fetching, logical instruction
 address A maps to two consecutive physical
 positions:
@@ -115,10 +114,20 @@ positions:
 - Position 2 × A.
 - Position 2 × A + 1.
 
+The first physical position contains
+the low-order nibble.
+
+The second physical position contains
+the high-order nibble.
+
 The two positions are combined to produce
 one logical 8-bit instruction unit.
 
 ## 7. RB4-B Physical Mapping
+
+RB4-B uses 8-bit physical memory positions.
+
+The physical memory contains 256 positions.
 
 Canonical mapping:
 
@@ -148,6 +157,10 @@ as one logical instruction unit.
 The two 4-bit halves may also be accessed
 individually through logical data addressing.
 
+Instruction fetching reads the complete
+physical byte and is not redirected by
+the MMIO data-address window.
+
 ## 9. Instruction Fetch in RB4-N
 
 A logical instruction address identifies
@@ -156,8 +169,13 @@ two consecutive physical 4-bit positions.
 The implementation combines both positions
 to construct the logical 8-bit instruction unit.
 
-The ordering must be consistent with
-the logical instruction encoding.
+The first physical nibble is the low-order nibble.
+
+The second physical nibble is the high-order nibble.
+
+The resulting logical instruction unit is:
+
+LogicalByte = (HighNibble << 4) | LowNibble
 
 ## 10. Memory Access
 
@@ -170,6 +188,10 @@ Both instructions use logical data addresses.
 The physical implementation translates
 the logical address into the corresponding
 physical memory location.
+
+The logical data address range is:
+
+0x000 to 0x1FF.
 
 ## 11. Partial Writes in RB4-B
 
@@ -198,15 +220,32 @@ Self-modifying code is permitted.
 All memory modifications must be visible
 to subsequent instruction fetches.
 
+Instruction fetching always uses the logical
+instruction address space.
+
+The MMIO data-address window does not redirect
+instruction fetches.
+
 ## 13. Memory-Mapped Input/Output
 
-MMIO uses logical memory addressing.
+MMIO uses logical data addressing.
 
-The implementation may assign logical
-memory addresses to external devices.
+The reserved MMIO data-address window is:
 
-The exact device map is implementation-defined
-or may be specified by a future standard extension.
+0x1F0 through 0x1FF.
+
+LOAD and STORE operations targeting this range
+access the MMIO interface instead of ordinary RAM.
+
+The assignment of individual device registers
+within this window is defined by the selected
+platform profile.
+
+Access to an unimplemented or forbidden
+MMIO register causes FAULT.
+
+Instruction fetching is not redirected by
+the MMIO data-address window.
 
 ## 14. Addressing Compatibility
 
@@ -219,11 +258,16 @@ must not be visible to software.
 Compatible implementations must produce
 the same results for equivalent memory operations.
 
+The selected physical memory profile must not
+change the logical meaning of instruction
+or data addresses.
+
 ## 15. Finalized Addressing Rules
 
 The following addressing rules are normative:
 
 - Logical instruction addresses are 8 bits.
+- Logical instruction addresses range from 0x00 to 0xFF.
 - Logical data addresses are 9 bits.
 - Logical data addresses range from 0x000 to 0x1FF.
 - Each logical data address identifies one 4-bit value.
@@ -236,56 +280,45 @@ The following addressing rules are normative:
 - LOAD and STORE use 9-bit logical data addresses.
 - MMIO occupies logical data addresses 0x1F0–0x1FF.
 - Instruction fetching is not redirected by MMIO.
+- A partial-nibble STORE in RB4-B preserves the other nibble.
 
 The physical representation must remain
 invisible to RB4 software.
 
+## 16. MMIO Data-Access Rules
 
-  ## 16. Ratified Addressing Decisions
+Logical data addresses 0x1F0 through 0x1FF
+are reserved for MMIO.
 
-The logical data address width is confirmed as 9 bits.
-Addresses range from 0x000 through 0x1FF and identify
-individual logical 4-bit values.
-
-For RB4-B, the nibble ordering is fixed as follows:
-
-- Nibble selector 0 selects the lower four bits (bits 3:0).
-- Nibble selector 1 selects the upper four bits (bits 7:4).
-
-For a physical byte 0xB4, logical data address selector 0
-reads 0x4 and selector 1 reads 0xB.
-
-The same logical ordering applies when assembling instruction
-units in RB4-N: the first physical nibble is the low-order
-nibble (bits 3:0) and the second physical nibble is the
-high-order nibble (bits 7:4).
-
-Thus:
-
-LogicalByte = (HighNibble << 4) | LowNibble
-
-## 17. MMIO Data-Address Window
-
-Logical data addresses 0x1F0 through 0x1FF are reserved
-for MMIO. LOAD and STORE operations targeting these addresses
+LOAD and STORE operations targeting these addresses
 access the MMIO interface, not ordinary RAM.
 
-Instruction fetch remains directed to unified program memory.
-The MMIO data-address window therefore does not remove or
-renumber logical instruction addresses.
+This reservation applies only to logical data accesses.
 
-The assignment of individual device registers within this
-16-nibble window is platform-profile-defined. Access to an
-unimplemented register causes FAULT.
+Instruction fetch remains directed to unified
+program memory.
 
-## 18. Invalid Data Addresses
+The MMIO data-address window therefore does not
+remove or renumber logical instruction addresses.
 
-LOAD and STORE use a 9-bit address field.
+The assignment of individual device registers
+within this 16-nibble window is platform-profile-defined.
+
+Access to an unimplemented or forbidden
+MMIO register causes FAULT.
+
+## 17. Invalid Data Accesses
+
+LOAD and STORE use a 9-bit logical address field.
 
 All values from 0x000 through 0x1FF are
-representable.
-
-The MMIO window occupies 0x1F0 through 0x1FF.
+representable by the logical data address.
 
 An access to an unimplemented or forbidden
 MMIO register causes FAULT.
+
+An implementation must not silently redirect
+an invalid MMIO access to ordinary RAM.
+
+The detailed fault behavior is defined in
+`RB4-Execution-Model.md`.
