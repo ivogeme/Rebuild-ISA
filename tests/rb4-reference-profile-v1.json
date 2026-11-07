@@ -1,0 +1,128 @@
+{
+  "suite": "RB4 Reference MMIO Conformance",
+  "suite_version": "1.0.0",
+  "architecture": "RB4",
+  "platform_profile": "RB4-REF-REG-1",
+  "status": "Initial reference vectors",
+  "tests": [
+    {
+      "id": "MMIO-001",
+      "description": "Write a value to REG0 using STORE.",
+      "program_hex": "10 05 38 F0 01 01",
+      "initial_state": {
+        "R0": 0,
+        "R1": 0,
+        "PC": 0,
+        "FLAGS": 0,
+        "state": "RUNNING"
+      },
+      "expected": {
+        "R0": 5,
+        "R1": 0,
+        "PC": 6,
+        "FLAGS": 0,
+        "state": "HALTED",
+        "mmio": {
+          "0x1F0": 5
+        }
+      }
+    },
+    {
+      "id": "MMIO-002",
+      "description": "Read a value from REG0 using LOAD.",
+      "program_hex": "30 F0 01 01",
+      "initial_state": {
+        "R0": 0,
+        "R1": 0,
+        "PC": 0,
+        "FLAGS": 0,
+        "state": "RUNNING"
+      },
+      "mmio_initial": {
+        "0x1F0": 11
+      },
+      "expected": {
+        "R0": 11,
+        "R1": 0,
+        "PC": 4,
+        "FLAGS": 0,
+        "state": "HALTED",
+        "mmio": {
+          "0x1F0": 11
+        }
+      }
+    },
+    {
+      "id": "MMIO-003",
+      "description": "Instruction fetching at logical address 0xF8 must not be redirected by the MMIO data overlay.",
+      "program_hex": "01",
+      "initial_state": {
+        "R0": 0,
+        "R1": 0,
+        "PC": 248,
+        "FLAGS": 0,
+        "state": "RUNNING"
+      },
+      "memory_overrides_hex": {
+        "0xF8": "01"
+      },
+      "expected": {
+        "R0": 0,
+        "R1": 0,
+        "PC": 249,
+        "FLAGS": 0,
+        "state": "HALTED",
+        "mmio": {}
+      }
+    },
+    {
+      "id": "MMIO-004",
+      "description": "STORE to ordinary logical RAM must not modify the MMIO register bank.",
+      "program_hex": "10 0A 38 20 00 01",
+      "initial_state": {
+        "R0": 0,
+        "R1": 0,
+        "PC": 0,
+        "FLAGS": 0,
+        "state": "RUNNING"
+      },
+      "expected": {
+        "R0": 10,
+        "R1": 0,
+        "PC": 6,
+        "FLAGS": 0,
+        "state": "HALTED",
+        "memory_data_nibble": {
+          "0x020": 10
+        },
+        "mmio": {}
+      }
+    },
+    {
+      "id": "MMIO-005",
+      "description": "LOAD and STORE must preserve FLAGS.",
+      "program_hex": "30 F0 01 38 F1 01 01",
+      "initial_state": {
+        "R0": 0,
+        "R1": 0,
+        "PC": 0,
+        "FLAGS": 3,
+        "state": "RUNNING"
+      },
+      "mmio_initial": {
+        "0x1F0": 7
+      },
+      "expected": {
+        "R0": 7,
+        "R1": 0,
+        "PC": 7,
+        "FLAGS": 3,
+        "state": "HALTED",
+        "mmio": {
+          "0x1F0": 7,
+          "0x1F1": 7
+        }
+      }
+    }
+  ]
+}
