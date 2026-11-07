@@ -381,17 +381,33 @@ encoding. Each value is the 4-bit opcode field.
 | 1110 | Reserved |
 | 1111 | Reserved |
 
-The allocation above fixes the main opcode groups. It does not,
-by itself, finalize the subopcode values or the bit-level operand
-layout inside each group. Those details must be specified before
-the binary encoding can be frozen.
+The allocation above fixes the main opcode groups.
 
-## 17. Extended Immediate Range
+The bit-level operand layouts and valid encodings
+are defined in Section 15.
 
-For LDI, both short and extended immediate forms must represent
-a value from 0 through 15. An extended LDI immediate greater than
-15 causes FAULT. Implementations must not silently truncate the
-value or wrap it modulo 16.
+All defined base instruction encodings are normative.
+
+Unassigned subopcodes and reserved encodings cause FAULT.
+
+## 17. LDI Format Validation
+
+LDI always occupies exactly two logical instruction units.
+
+The first unit identifies the destination register.
+
+The second unit must use the format 0000 IIII.
+
+The upper four bits of the second unit must be zero.
+
+The lower four bits represent the immediate value
+from 0 through 15.
+
+Any other second-unit format causes FAULT.
+
+Implementations must not truncate, wrap or reinterpret
+an invalid LDI encoding.
+
 
 ## 18. Relative PC Boundary Rule
 
