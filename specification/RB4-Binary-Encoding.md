@@ -113,22 +113,19 @@ Examples:
 LDI R0, 5: 10 05
 LDI R1, 15: 18 0F
 
-### 6.2 Extended Immediate
+### 6.2 LDI Encoding Restrictions
 
-An extended immediate uses an additional
-8-bit logical instruction unit.
+LDI always uses exactly two logical instruction units.
 
-The extended value is interpreted according
-to the instruction definition.
+The second unit must have its upper four bits set to zero.
 
-For LDI, the destination register remains 4 bits.
+The lower four bits contain the immediate value,
+which must be in the range 0 through 15.
 
-Therefore, an extended immediate does not
-increase the width of the destination register.
+Any LDI encoding that violates this format causes FAULT.
 
-The value must still be representable in
-the destination register unless a future
-instruction explicitly defines another behavior.
+No short or extended LDI alternative encoding exists.
+
 
 ## 7. Extended Instructions
 
