@@ -128,7 +128,7 @@ of RB4 programs.
 
 ## Instruction Set
 
-The proposed base instruction set includes:
+The base instruction set includes:
 
 ### Control
 
@@ -156,16 +156,24 @@ The proposed base instruction set includes:
 - XOR
 - NOT
 
-### Branching
+### Absolute Branching
 
 - JMP
 - JZ
 - JNZ
 
-The instruction set uses 4-bit register values and supports
-short and extended instruction forms.
+### Relative Branching
 
-The complete instruction encoding is documented separately.
+- JR
+- JRZ
+- JRNZ
+
+The instruction set uses 4-bit register values
+and supports variable-length instructions.
+
+The complete instruction encoding and execution
+semantics are documented separately.
+
 
 ## Architectural Registers
 
@@ -189,32 +197,58 @@ RB4 uses a unified memory architecture.
 
 Instructions and data share the same physical memory.
 
-Self-modifying code is permitted.
+Self-modifying code is permitted through STORE operations
+to logical data addresses outside the MMIO window.
 
-Memory-mapped input/output is part of the architecture.
+The logical data-address window 0x1F0–0x1FF
+is reserved for memory-mapped input/output.
 
-The exact peripheral address map may be defined by an
-implementation or a future standard extension.
+LOAD and STORE operations targeting this range
+are routed to the selected platform profile.
+
+Instruction fetching is never redirected by
+the MMIO data-address overlay.
+
+The base architecture defines the MMIO address window
+and its access behavior.
+
+Individual device registers are defined by
+the selected platform profile.
+
+The reference profile is documented in
+`RB4-Reference-Platform.md`.
 
 ## Development Status
 
-**Current status: Architecture specification in development.**
+**Current status: RB4 architecture specified for implementation.**
 
-The fundamental architectural direction and major design
-decisions have been established.
+The fundamental architectural behavior and major
+design decisions have been established.
 
-The following areas are being formalized:
+The specification defines:
 
-- Logical and physical memory addressing.
-- Memory mapping for RB4-N and RB4-B.
-- Binary instruction encoding.
-- Opcode and subopcode allocation.
+- Architectural registers and flags.
+- Instruction encoding and opcode allocation.
 - Instruction execution semantics.
-- Architectural fault behavior.
+- Logical and physical memory addressing.
+- RB4-N and RB4-B memory profiles.
+- Memory-mapped input/output behavior.
+- Architectural fault and reset behavior.
 - Implementation requirements.
-- Mandatory conformance tests.
+- Mandatory conformance requirements.
 
-The architectural specification is not yet frozen.
+The reference platform profile provides
+a common MMIO implementation baseline.
+
+The conformance test suite provides
+a common basis for evaluating independent
+implementations.
+
+The specification should be treated as stable
+for implementations targeting this revision.
+
+Any future incompatible architectural change
+must be documented as a new architecture revision.
 
 ## Documentation
 
@@ -229,6 +263,7 @@ The specification is organized into separate documents:
 - `RB4-Addressing-Model.md`
 - `RB4-Conformance-Tests.md`
 - `RB4-Implementation-Requirements.md`
+- `RB4-Reference-Platform.md`
 
 ## License
 
