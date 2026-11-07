@@ -167,22 +167,32 @@ Execution resumes only after reset.
 
 FAULT represents an architectural execution error.
 
-The processor enters FAULT when it encounters
-conditions such as:
+The processor enters FAULT when it encounters:
 
 - Undefined opcode.
 - Undefined subopcode.
 - Invalid instruction format.
 - Invalid register selector.
 - Invalid operand combination.
-- Incomplete extended instruction.
+- Incomplete instruction.
+- Invalid immediate value.
+- Access to an unimplemented or forbidden MMIO register.
 
-When FAULT occurs, normal instruction execution stops.
+When FAULT occurs:
 
-The processor remains in FAULT until reset.
+1. PC remains at the starting address
+   of the faulting instruction.
+2. R0 and R1 are not partially modified.
+3. FLAGS is not partially modified.
+4. No subsequent instruction is executed.
+5. The processor remains in FAULT until RESET.
 
-The exact internal handling of a fault
-is implementation-dependent.
+External MMIO effects that have already occurred
+are not rolled back.
+
+The processor must not continue normal execution
+while in FAULT.
+
 
 ## 12. Incomplete Instructions
 
@@ -277,5 +287,19 @@ the addressed MMIO register, the access causes FAULT.
 
 The MMIO register assignment is defined by the selected
 platform profile.
+
+## 20. Fault Atomicity
+
+An instruction that causes FAULT must not leave
+partially updated architectural register state.
+
+The architectural state of R0, R1 and FLAGS
+must remain unchanged by the failed instruction.
+
+This requirement does not imply rollback of
+external device effects that have already occurred.
+
+The PC identifies the starting address of
+the instruction that caused FAULT.
 
 
