@@ -269,13 +269,22 @@ This rule distinguishes normal PC wrap after a complete
 instruction from an instruction that crosses the end
 of the logical instruction address space.
 
-## 18. Extended LDI Fault Condition
+## 18. Malformed LDI Encoding
 
-An extended LDI immediate greater than 15 causes FAULT,
-because the destination general-purpose register is only
-4 bits wide.
+LDI always occupies exactly two logical instruction units.
 
-No truncation or modulo conversion is permitted.
+The second unit must have its upper four bits set to zero.
+
+The lower four bits contain the immediate value
+from 0 through 15.
+
+If the upper four bits of the second unit are nonzero,
+the instruction causes FAULT.
+
+No alternative short or extended LDI encoding exists.
+
+The processor must not truncate or reinterpret
+a malformed LDI instruction.
 
 ## 19. MMIO Fault Condition
 
