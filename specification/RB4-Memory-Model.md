@@ -268,3 +268,51 @@ the MMIO window does not change the physical storage size.
 The mapping of individual devices and registers inside
 the MMIO window is defined by a platform profile. Access to
 an unimplemented MMIO register causes FAULT.
+
+## 15. Canonical Logical Memory Mapping
+
+RB4 defines 512 logical 4-bit data positions.
+
+Logical data addresses range from 0x000
+through 0x1FF.
+
+For RB4-N:
+
+PhysicalAddress = LogicalDataAddress
+
+For RB4-B:
+
+PhysicalAddress = LogicalDataAddress >> 1
+
+NibbleSelector = LogicalDataAddress & 1
+
+Selector 0 accesses bits 3:0.
+
+Selector 1 accesses bits 7:4.
+
+A partial-nibble STORE must preserve
+the other nibble in the physical byte.
+
+### 15.1 Instruction Fetch
+
+For logical instruction address A:
+
+RB4-N:
+
+LowNibble = Memory[2 * A]
+HighNibble = Memory[2 * A + 1]
+
+LogicalByte = (HighNibble << 4) | LowNibble
+
+RB4-B:
+
+LogicalByte = Memory[A]
+
+Instruction fetching always reads
+the unified program memory.
+
+The MMIO data-address overlay does not
+redirect instruction fetching.
+
+
+
