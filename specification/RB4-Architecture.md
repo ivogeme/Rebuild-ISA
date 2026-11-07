@@ -240,27 +240,28 @@ future compatible extensions where applicable.
 
 Any incompatible architectural change must be
 
-## 13. Ratified Base Decisions
+## ## 13. Ratified Base Architecture
 
-The following decisions are approved for the RB4 base architecture:
+The RB4 base architecture defines:
 
-- Logical data addresses are 9 bits wide (0x000–0x1FF).
-- RB4-B selector 0 addresses the lower nibble and selector 1
-  addresses the upper nibble.
-- RB4-N assembles each logical instruction unit with the first
-  physical nibble as the low-order nibble and the second as
-  the high-order nibble.
-- Main opcode groups are allocated as specified in
-  RB4-Binary-Encoding.md.
-- Extended LDI values greater than 15 cause FAULT.
-- A complete instruction ending at 0xFF may advance PC to 0x00.
-  An instruction beginning at 0xFF that requires additional
-  units causes FAULT rather than wrapping to complete the
-  instruction.
-- Logical data addresses 0x1F0–0x1FF are reserved for MMIO.
-  This data-access overlay does not redirect instruction fetch.
+- Two 4-bit general-purpose registers: R0 and R1.
+- An 8-bit Program Counter.
+- A 2-bit FLAGS register.
+- An 8-bit logical instruction unit.
+- Variable-length instructions of one, two or three units.
+- A 9-bit logical data address space.
+- 512 logical 4-bit data positions.
+- Unified instruction and data memory.
+- RB4-N and RB4-B physical memory profiles.
+- Absolute and relative branching.
+- Memory-mapped input/output.
+- RUNNING, HALTED and FAULT execution states.
 
-The exact subopcode assignments, operand bit layouts, LOAD/STORE
-9-bit address encoding, and common peripheral register map
-remain to be specified before the architecture can be frozen.
-identified as a new architecture revision or family member.
+The base instruction encoding is defined
+in RB4-Binary-Encoding.md.
+
+The base execution behavior is defined
+in RB4-Execution-Model.md.
+
+The base memory behavior is defined
+in RB4-Memory-Model.md.
