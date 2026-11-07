@@ -240,7 +240,7 @@ future compatible extensions where applicable.
 
 Any incompatible architectural change must be
 
-## ## 13. Ratified Base Architecture
+## 13. Ratified Base Architecture
 
 The RB4 base architecture defines:
 
